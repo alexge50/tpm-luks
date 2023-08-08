@@ -6,6 +6,7 @@ config.log
 config.status
 config.sub
 configure
+configure~
 depcomp
 .deps
 install-sh
@@ -18,6 +19,10 @@ Makefile
 Makefile.in
 missing
 *.o
+debian/tpm-luks.debhelper.log
+debian/.debhelper
+debian/files
+debian/tpm-luks*
 swtpm-utils/.auditing-0
 swtpm-utils/getcapability
 swtpm-utils/lib/libtpm.la

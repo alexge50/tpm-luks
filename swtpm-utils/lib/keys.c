@@ -1249,8 +1249,9 @@ RSA *TSS_convpubkey(pubkeydata *k)
                 exp);
    }
    /* set up the RSA public key structure */
-   rsa->n = mod;
-   rsa->e = exp;
+//    rsa->n = mod;
+//    rsa->e = exp;
+   RSA_set0_key(rsa, mod, exp, NULL);
    return rsa;
    }
 

@@ -18,6 +18,7 @@
  */
 
 #include <argp.h>
+#include <openssl/types.h>
 #include <openssl/err.h>
 #include <openssl/evp.h>
 #include <stdbool.h>
@@ -130,7 +131,7 @@ dump_buf (FILE *file, unsigned char *buf, size_t length)
 static unsigned char*
 sha1_file (FILE *file, unsigned int *hash_len)
 {
-    EVP_MD_CTX ctx = { 0 };
+    EVP_MD_CTX *ctx;
     unsigned char *buf = NULL, *hash = NULL;
     size_t num_read = 0;
 
@@ -139,6 +140,9 @@ sha1_file (FILE *file, unsigned int *hash_len)
         perror ("malloc:\n");
         goto sha1_fail;
     }
+
+    ctx = EVP_MD_CTX_new();
+
     if (EVP_DigestInit (&ctx, EVP_sha1 ()) == 0) {
         ERR_print_errors_fp (stderr);
         goto sha1_fail;

@@ -381,32 +381,65 @@ uint32_t TSS_authhmac(unsigned char *digest, unsigned char *key, unsigned int ke
 /****************************************************************************/
 uint32_t TSS_rawhmac(unsigned char *digest, const unsigned char *key, unsigned int keylen, ...)
    {
-   HMAC_CTX hmac;
-   unsigned int dlen;
-   unsigned char *data;
-   va_list argp;
-   
-#ifdef HAVE_HMAC_CTX_CLEANUP
-   HMAC_CTX_init(&hmac);
-#endif
-   HMAC_Init(&hmac,key,keylen,EVP_sha1());
+   unsigned char* data = NULL;
+   size_t size = 0;
+   va_list argp; 
 
-   va_start(argp,keylen);
+   va_start(argp, keylen);
    for (;;)
       {
-      dlen = (unsigned int)va_arg(argp,unsigned int);
-      if (dlen == 0) break;
-      data = (unsigned char *)va_arg(argp,unsigned char *);
-      if (data == NULL) return ERR_NULL_ARG;
-      HMAC_Update(&hmac,data,dlen);
-      }
-   HMAC_Final(&hmac,digest,&dlen);
+      unsigned int arg_size = (unsigned int)va_arg(argp, unsigned int);
+      if(arg_size == 0) break;
 
-#ifdef HAVE_HMAC_CTX_CLEANUP
-   HMAC_CTX_cleanup(&hmac);
-#else
-   HMAC_cleanup(&hmac);
-#endif
-   va_end(argp);
+      unsigned char* arg_data = (unsigned char*) va_arg(argp, unsigned char *);
+      if (arg_data == NULL) return ERR_NULL_ARG;
+
+      data = (unsigned char*) realloc(data, size + arg_size);
+      memcpy(data + size, arg_data, arg_size);
+      
+      size += arg_size;
+      }
+   va_end(argp);         
+
+   size_t digest_size = 20; // 20 bytes as per the function contract
+   unsigned char* new_digest;
+
+   new_digest = HMAC(EVP_sha1(), key, keylen, data, size, digest, &digest_size);
+   
+   free(data);
+
+   if(digest_size != 20) {
+      return ERR_CRYPT_ERR;      
+   }
+
+   // HMAC_CTX hmac;
+//    unsigned int dlen;
+//    unsigned char *data;
+//    va_list argp;
+   
+// #ifdef HAVE_HMAC_CTX_CLEANUP
+//    HMAC_CTX_init(&hmac);
+// #endif
+//    HMAC_Init(&hmac,key,keylen,EVP_sha1());
+
+//    va_start(argp,keylen);
+//    for (;;)
+//       {
+//       dlen = (unsigned int)va_arg(argp,unsigned int);
+//       if (dlen == 0) break;
+//       data = (unsigned char *)va_arg(argp,unsigned char *);
+//       if (data == NULL) return ERR_NULL_ARG;
+//       HMAC_Update(&hmac,data,dlen);
+//       }
+//    HMAC_Final(&hmac,digest,&dlen);
+
+// #ifdef HAVE_HMAC_CTX_CLEANUP
+//    HMAC_CTX_cleanup(&hmac);
+// #else
+//    HMAC_cleanup(&hmac);
+// #endif
+//    va_end(argp);
+//    return 0;
+
    return 0;
    }
